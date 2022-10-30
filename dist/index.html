@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="script.js" defer type="module"></script>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header id="head">
+      <button class="tabsBut selected" id="queueBut">
+        <h2>Wejścia/Wyjścia</h2>
+      </button>
+      <button class="tabsBut" id="manageBut">
+        <h2>Zarządzaj klientami</h2>
+      </button>
+    </header>
+    <main>
+      <section class="tabs" id="queue">
+        <div class="inputCon">
+          <h3>Wybierz klienta</h3>
+          <input list="client" id="clientSelected" />
+          <datalist name="client" id="client"></datalist>
+        </div>
+        <div class="inputCon">
+          <button id="enter">Wchodzi</button>
+          <button id="leave">Wychodzi</button>
+        </div>
+      </section>
+      <section class="tabs" id="manage" style="display: none">
+        <aside id="extend">
+          <div id="asideInputs">
+            <div id="extendClientCon">
+              <h3>Wybierz klienta</h3>
+              <input list="client" id="clientToExtend" />
+            </div>
+            <div id="extendTimeCon">
+              <p id="presentExtendedTime">1</p>
+              <input
+                type="range"
+                name="extendtime"
+                id="extendTime"
+                value="1"
+                min="1"
+                max="10"
+              />
+            </div>
+          </div>
+          <button id="extendBut">Przedłuż</button>
+        </aside>
+        <aside id="add">
+          <div id="asideInputs">
+            <div class="clientDataCon">
+              <p>Imię</p>
+              <input type="text" name="name" id="name" />
+            </div>
+            <div class="clientDataCon">
+              <p>Nazwisko</p>
+              <input type="text" name="surname" id="surname" />
+            </div>
+            <div class="clientDataCon">
+              <p>Pesel</p>
+              <input type="text" name="pesel" id="pesel" />
+            </div>
+          </div>
+          <button id="addBut">Dodaj</button>
+        </aside>
+      </section>
+    </main>
+  </body>
+  <!-- Wykonaj aplikację pozwalającą na kontrolę czasu wykorzystanego
+z karnetu wejściowego na siłownię. Dane są zapisywane do pliku csv lub json.
+Plik musi zawierać dane identyfikacyjne osoby i czas na karnecie.
+Program umożliwia wprowadzenie klienta  z dropdown menu (rozważ aktualizację list wyboru dla wejścia i wyjścia).
+Należy obliczyć czas przebywania na siłowni i odjąć go od karnetu a następnie zapisać uaktualnioną pozostałość karnetu do pliku.
+Przerób aplikację dodając kolejną zakładkę (tab) w której będzie możliwość dodania nowego klienta (imię, nazwisko) i dopisanie go do csv/json oraz możliwość dodania godzin do karnetów dla wybranego klienta i dopisanie ich do pliku. Liczba godzin musi być wybierana za pomocą suwaka/slider z wartości pomiędzy 1 a 10 godzin.
+Dodatkowo premiowane: zapis samych wejść i wyjść do pliku na wypadek awarii zasilania czy zawieszenia się aplikacji. -->
+</html>

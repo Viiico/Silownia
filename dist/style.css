@@ -1,0 +1,137 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  height: 20vh;
+  width: 100vw;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+header button {
+  height: 6vh;
+  width: 30vw;
+}
+
+header h2 {
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.selected {
+  height: 9vh;
+}
+
+main {
+  height: 80vh;
+  width: 100vw;
+}
+
+section {
+  width: 100vw;
+  height: 80vh;
+}
+
+#queue, #manage {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-direction: column;
+  flex-wrap: wrap;
+  font-size: 5vh;
+  background-color: rgb(221, 218, 218);
+}
+
+#queue button,
+#extend button,
+#add button {
+  width: 30vw;
+  height: 10vh;
+  font-size: min(5vh, 6vw);
+}
+
+#queue select {
+  font-size: min(4vh, 5vw);
+}
+
+.inputCon {
+  width: 100vw;
+  height: 40vh;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+}
+
+#manage {
+  display: flex;
+  justify-content: center;
+}
+
+#manage aside {
+  width: 50vw;
+  height: 80vh;
+}
+
+#asideInputs {
+  height: 70vh;
+}
+
+#extend,
+#add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+
+#extendClientCon,
+#extendTimeCon,
+.clientDataCon {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-direction: column;
+  width: 40vw;
+  font-size: min(4vh, 5vw);
+}
+
+#extendClientCon {
+  height: 40vh;
+}
+
+#extendClientCon input {
+  height: 3.5vh;
+}
+
+#extendTimeCon {
+  height: 20vh;
+}
+
+#extendTimeCon p {
+  font-size: 6vh;
+}
+
+#extendTime {
+  width: 30vw;
+  background-color: green;
+}
+
+#add {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+}
+
+.clientDataCon {
+  height: calc(100vh / 5.1);
+}
+
+#add input {
+  height: 4vh;
+  text-align: center;
+}
