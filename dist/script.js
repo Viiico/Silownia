@@ -3,14 +3,12 @@ const { readTextFile, writeTextFile, createDir, BaseDirectory } =
   window.__TAURI__.fs;
 const { documentDir, join } = window.__TAURI__.path;
 const { message } = window.__TAURI__.dialog;
-const clientsOutOptions = document.querySelector("#clientsOut");
-const clientsInOptions = document.querySelector("#clientsIn");
 const clientsOutSelected = document.querySelector("#clientsOutSelected");
 const clientsInSelected = document.querySelector("#clientsInSelected");
 const presentExtend = document.querySelector("#presentExtendedTime");
 const clientToExtend = document.querySelector("#clientToExtend");
 const extendTimeInp = document.querySelector("#extendTime");
-const extendTimeButton = document.querySelector("#extendBut");
+const extendTimeBut = document.querySelector("#extendBut");
 const addBut = document.querySelector("#addBut");
 const nameInp = document.querySelector("#name");
 const surnameInp = document.querySelector("#surname");
@@ -37,7 +35,7 @@ let lists = { clientsOut: {}, clientsIn: {}, allClients: {}};
 
 leaveBut.addEventListener("click", async () => await clientLeaves());
 enterBut.addEventListener("click", async () => await clientEnters());
-extendBut.addEventListener("click", async () => await extendTime());
+extendTimeBut.addEventListener("click", async () => await extendTime());
 addBut.addEventListener("click", async () => await addClient());
 extendTimeInp.addEventListener(
   "input",
@@ -108,6 +106,8 @@ async function extendTime() {
   usersData[who]["carnetTime"] += time * 60;
   writeFile("users.json", JSON.stringify(usersData, null, 2))
   lists["allClients"] = usersData;
+  if(lists["clientsOut"]?.[who])lists["clientsOut"][who] = usersData[who];
+  if(lists["clientsIn"]?.[who])lists["clientsIn"][who] = usersData[who];
   updateDataLists();
   clientToExtend.value = "";
   errorHandler("Pomyślnie przedłużono karnet");
@@ -173,6 +173,7 @@ async function createDataFolder(path) {
     dir: BaseDirectory.Document,
     recursive: true,
   });
+  await errorHandler(`Folder stworzony w: ${path}`);
   await writeFile("queue.json", "{}");
   let defaultData = {
     12345678910: {
