@@ -3,8 +3,10 @@ const { readTextFile, writeTextFile, createDir, BaseDirectory } =
   window.__TAURI__.fs;
 const { documentDir, join } = window.__TAURI__.path;
 const { message } = window.__TAURI__.dialog;
-const clientSelect = document.querySelector("#client");
-const clientSelected = document.querySelector("#clientSelected");
+const clientsOutOptions = document.querySelector("#clientsOut");
+const clientsInOptions = document.querySelector("#clientsIn");
+const clientsOutSelected = document.querySelector("#clientsOutSelected");
+const clientsInSelected = document.querySelector("#clientsInSelected");
 const presentExtend = document.querySelector("#presentExtendedTime");
 const clientToExtend = document.querySelector("#clientToExtend");
 const extendTimeInp = document.querySelector("#extendTime");
@@ -17,7 +19,21 @@ const enterBut = document.querySelector("#enter");
 const leaveBut = document.querySelector("#leave");
 const buts = document.querySelectorAll(".tabsBut");
 const tabs = document.querySelectorAll(".tabs");
-(async () => await updateData(await readFile("users.json")))();
+const DOCUMENT_PATH = await join(await documentDir(), "Siłownia");
+
+let lists = { clientsOut: {}, clientsIn: {}, allClients: {}};
+(async () => {
+  let allUsers = await readFile("users.json");
+  let usersInQueue = await readFile("queue.json");
+  for (let user in allUsers) {
+    lists["allClients"][user] = allUsers[user];
+    if (usersInQueue?.[user]) lists["clientsIn"][user] = allUsers[user];
+    else lists["clientsOut"][user] = allUsers[user];
+  }
+  addOptions("clientsOut");
+  addOptions("clientsIn");
+  addOptions("allClients");
+})();
 
 leaveBut.addEventListener("click", async () => await clientLeaves());
 enterBut.addEventListener("click", async () => await clientEnters());
@@ -38,27 +54,26 @@ buts.forEach((el) =>
   })
 );
 async function clientEnters() {
-  let who = clientSelected?.value;
+  let who = clientsOutSelected?.value;
   if (!who) return;
+  clientsOutSelected.value = "";
+  if(lists["allClients"][who]["carnetTime"] < 60)return errorHandler("Klient ma poniżej 60 minut na karnecie");
   let queue = await readFile("queue.json");
   if (queue[who]) return errorHandler("Ta osoba jest już na siłowni");
   let timeNow = new Date().getTime();
   queue[who] = timeNow;
-  let newQueue = JSON.stringify(queue, null, 2);
-  await writeTextFile("Siłownia//queue.json", newQueue, {
-    dir: BaseDirectory.Document,
-  });
+  await writeFile("queue.json", JSON.stringify(queue, null, 2));
   let history = await readFile("history.json");
   if (!history["enter"]?.[who]) history["enter"][who] = [];
-  console.log(history);
   history["enter"][who].push(timeNow);
-  let newHistory = JSON.stringify(history, null, 2);
-  await writeTextFile("Siłownia//history.json", newHistory, {
-    dir: BaseDirectory.Document,
-  });
+  await writeFile("history.json", JSON.stringify(history, null));
+  lists["clientsIn"][who] = lists["clientsOut"][who];
+  delete lists["clientsOut"][who];
+  updateDataLists();
 }
+
 async function clientLeaves() {
-  let who = clientSelected?.value;
+  let who = clientsInSelected?.value;
   if (!who) return;
   let queue = await readFile("queue.json");
   if (!queue[who]) return errorHandler("Tej osoby nie ma na siłowni");
@@ -71,24 +86,18 @@ async function clientLeaves() {
     return errorHandler(`Klient był za długo o ${0 - newUserTime} minut`);
   }
   usersData[who]["carnetTime"] = newUserTime;
-  let newData = JSON.stringify(usersData, null, 2);
-  await writeTextFile("Siłownia//users.json", newData, {
-    dir: BaseDirectory.Document,
-  });
+  await writeFile("users.json", JSON.stringify(usersData, null, 2))
   delete queue[who];
-  let newQueue = JSON.stringify(queue, null, 2);
-  await writeTextFile("Siłownia//queue.json", newQueue, {
-    dir: BaseDirectory.Document,
-  });
-  updateData(usersData);
+  writeFile("queue.json", JSON.stringify(queue, null, 2));
+  updateDataLists(usersData);
   let history = await readFile("history.json");
   if (!history["leave"]?.[who]) history["leave"][who] = [];
-  console.log(history);
   history["leave"][who].push(new Date().getTime());
-  let newHistory = JSON.stringify(history, null, 2);
-  await writeTextFile("Siłownia//history.json", newHistory, {
-    dir: BaseDirectory.Document,
-  });
+  writeFile("history.json", JSON.stringify(history, null, 2));
+  lists["clientsOut"][who] = lists["clientsIn"][who];
+  delete lists["clientsIn"][who];
+  updateDataLists();
+  clientsInSelected.value = "";
 }
 
 async function extendTime() {
@@ -97,12 +106,11 @@ async function extendTime() {
   let time = extendTimeInp?.value;
   let usersData = await readFile("users.json");
   usersData[who]["carnetTime"] += time * 60;
-  let newData = JSON.stringify(usersData, null, 2);
-  writeTextFile("Siłownia//users.json", newData, {
-    dir: BaseDirectory.Document,
-  });
+  writeFile("users.json", JSON.stringify(usersData, null, 2))
+  lists["allClients"] = usersData;
+  updateDataLists();
+  clientToExtend.value = "";
   errorHandler("Pomyślnie przedłużono karnet");
-  updateData(usersData);
 }
 
 async function addClient() {
@@ -112,35 +120,49 @@ async function addClient() {
   if (!surname) return errorHandler("Podaj nazwisko klienta");
   let pesel = peselInp?.value;
   if (!pesel) return errorHandler("Podaj pesel klienta");
+  if(pesel.length < 11)return errorHandler("Podaj prawidłowy pesel")
   let usersData = await readFile("users.json");
   if (usersData[pesel])
     return errorHandler(`Użytkownik o danym pesel jest już zarejestrowany`);
   usersData[pesel] = { name, surname, carnetTime: 0 };
-  let newData = JSON.stringify(usersData, null, 2);
-  writeTextFile("Siłownia//users.json", newData, {
-    dir: BaseDirectory.Document,
-  });
+  writeFile("users.json", JSON.stringify(usersData, null, 2))
+  lists["allClients"] = usersData;
+  lists["clientsOut"][pesel] = usersData[pesel];
+  updateDataLists();
   errorHandler("Pomyślnie dodano klienta");
-  updateData(usersData);
 }
 
-async function updateData(usersData) {
-  while (clientSelect?.lastChild) {
-    clientSelect?.removeChild(clientSelect?.lastChild);
-  }
-  for (let key in usersData) {
+function addOptions(listName) {
+  let list = lists[listName];
+  for (let key in list) {
     let opt = document.createElement("option");
     opt.value = key;
-    let { name, surname, carnetTime } = usersData[key];
+    let { name, surname, carnetTime } = list[key];
     opt.innerHTML = `${name} ${surname} - ${carnetTime} minut`;
-    clientSelect.appendChild(opt);
+    document.getElementById(listName).appendChild(opt);
   }
+}
+
+function updateDataLists() {
+  for (let listName in lists) {
+    lists[listName] = Object.keys(lists[listName]).sort().reduce((obj, key) => {
+      obj[key] = lists[listName][key];
+      return obj;
+    },{})
+    abort(listName);
+    addOptions(listName);
+  }
+}
+
+async function writeFile(name, data) {
+  await writeTextFile(await join(DOCUMENT_PATH, name), data, {
+    dir: BaseDirectory.Document,
+  });
 }
 
 async function readFile(name) {
-  const path = await join(await documentDir(), "Siłownia");
-  await createDataFolder(path);
-  return JSON.parse(await readTextFile(await join(path, name)), {
+  await createDataFolder(DOCUMENT_PATH);
+  return JSON.parse(await readTextFile(await join(DOCUMENT_PATH, name)), {
     dir: BaseDirectory.Document,
   });
 }
@@ -151,10 +173,7 @@ async function createDataFolder(path) {
     dir: BaseDirectory.Document,
     recursive: true,
   });
-  await writeTextFile("Siłownia//queue.json", "{}", {
-    dir: BaseDirectory.Document,
-  });
-
+  await writeFile("queue.json", "{}");
   let defaultData = {
     12345678910: {
       name: "Jakub",
@@ -172,16 +191,15 @@ async function createDataFolder(path) {
       carnetTime: 600,
     },
   };
-  await writeTextFile(
-    "Siłownia//users.json",
-    JSON.stringify(defaultData, null, 2),
-    {
-      dir: BaseDirectory.Document,
-    }
-  );
-  await writeTextFile("Siłownia//history.json", `{"enter": {}, "leave": {}}`, {
-    dir: BaseDirectory.Document,
-  });
+  await writeFile("users.json", JSON.stringify(defaultData, null, 2));
+  await writeFile("history.json", `{"enter": {}, "leave": {}}`);
+}
+
+function abort(id) {
+  let el = document.getElementById(id);
+  while (el?.lastChild) {
+    el.removeChild(el.lastChild);
+  }
 }
 
 async function errorHandler(err) {
